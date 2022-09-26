@@ -15,6 +15,6 @@ public class DispatcherServletInitializer extends AbstractAnnotationConfigDispat
 
     @Override
     protected String[] getServletMappings() {
-        return new String[] {"/api/v1/secret"};
+        return new String[] {"/"};
     }
 }
