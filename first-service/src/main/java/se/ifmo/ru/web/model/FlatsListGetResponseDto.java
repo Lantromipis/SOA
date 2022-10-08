@@ -16,13 +16,19 @@ import java.util.List;
 @XmlRootElement(name = "Flats")
 public class FlatsListGetResponseDto{
     private List<FlatGetResponseDto> flatGetResponseDtos;
+    private Integer page;
+    private Integer pageSize;
+    private Integer totalPages;
 
     @XmlElement(name = "Flat")
     public List<FlatGetResponseDto> getFlatGetResponseDtos() {
         return flatGetResponseDtos;
     }
 
-    public FlatsListGetResponseDto(List<FlatGetResponseDto> flatGetResponseDtos) {
+    public FlatsListGetResponseDto(List<FlatGetResponseDto> flatGetResponseDtos, Integer page, Integer pageSize, Integer totalPages) {
         this.flatGetResponseDtos = flatGetResponseDtos;
+        this.page = page;
+        this.pageSize = pageSize;
+        this.totalPages = totalPages;
     }
 }

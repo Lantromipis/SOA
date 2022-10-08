@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import se.ifmo.ru.mapper.FlatMapper;
 import se.ifmo.ru.service.api.FlatService;
 import se.ifmo.ru.service.model.Flat;
+import se.ifmo.ru.storage.model.Page;
 import se.ifmo.ru.util.ResponseUtils;
 import se.ifmo.ru.web.model.FlatAddOrUpdateRequestDto;
 import se.ifmo.ru.web.model.FlatsListGetResponseDto;
@@ -70,7 +71,7 @@ public class CatalogController {
                 ? new ArrayList<>()
                 : Stream.of(filterParameters).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
 
-        List<Flat> flats = flatService.getFlats(
+        Page<Flat> resultPage = flatService.getFlats(
                 sort,
                 filter,
                 page,
@@ -80,7 +81,10 @@ public class CatalogController {
         return Response
                 .ok()
                 .entity(new FlatsListGetResponseDto(
-                                flatMapper.toGetResponseDtoList(flats)
+                                flatMapper.toGetResponseDtoList(resultPage.getObjects()),
+                                resultPage.getPage(),
+                                resultPage.getPageSize(),
+                                resultPage.getTotalCount()
                         )
                 )
                 .build();

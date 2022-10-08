@@ -1,12 +1,13 @@
 package se.ifmo.ru.service.api;
 
 import se.ifmo.ru.service.model.Flat;
+import se.ifmo.ru.storage.model.Page;
 import se.ifmo.ru.web.model.FlatAddOrUpdateRequestDto;
 
 import java.util.List;
 
 public interface FlatService {
-    List<Flat> getFlats(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize);
+    Page<Flat> getFlats(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize);
 
     Flat getFlat(long id);
 

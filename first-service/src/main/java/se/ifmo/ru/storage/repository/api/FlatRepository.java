@@ -2,6 +2,7 @@ package se.ifmo.ru.storage.repository.api;
 
 import se.ifmo.ru.storage.model.Filter;
 import se.ifmo.ru.storage.model.FlatEntity;
+import se.ifmo.ru.storage.model.Page;
 import se.ifmo.ru.storage.model.Sort;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface FlatRepository {
 
     boolean deleteById(long id);
 
-    List<FlatEntity> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filters, Integer page, Integer size);
+    Page<FlatEntity> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filters, Integer page, Integer size);
 
     long countHeight();
 

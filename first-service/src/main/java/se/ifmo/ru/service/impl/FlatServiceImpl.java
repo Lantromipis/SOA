@@ -6,6 +6,7 @@ import se.ifmo.ru.mapper.FlatMapper;
 import se.ifmo.ru.service.api.FlatService;
 import se.ifmo.ru.service.model.Flat;
 import se.ifmo.ru.service.model.Transport;
+import se.ifmo.ru.storage.model.Page;
 import se.ifmo.ru.storage.repository.impl.FlatRepositoryImpl;
 import se.ifmo.ru.storage.model.Filter;
 import se.ifmo.ru.storage.model.FilteringOperation;
@@ -30,7 +31,7 @@ public class FlatServiceImpl implements FlatService {
     FlatMapper flatMapper;
 
     @Override
-    public List<Flat> getFlats(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize) {
+    public Page<Flat> getFlats(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize) {
         if (page != null || pageSize != null) {
             if (page == null) {
                 page = 0;
@@ -99,10 +100,15 @@ public class FlatServiceImpl implements FlatService {
             );
         }
 
+        Page<FlatEntity> entitiesPage = flatDao.getSortedAndFilteredPage(sorts, filters, page, pageSize);
 
-        return flatMapper.fromEntityList(
-                flatDao.getSortedAndFilteredPage(sorts, filters, page, pageSize)
-        );
+        Page<Flat> ret = new Page<>();
+        ret.setObjects(flatMapper.fromEntityList(entitiesPage.getObjects()));
+        ret.setPage(entitiesPage.getPage());
+        ret.setPageSize(entitiesPage.getPageSize());
+        ret.setTotalCount(entitiesPage.getTotalCount());
+
+        return ret;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package se.ifmo.ru.storage.repository.impl;
 
 import org.apache.commons.collections4.CollectionUtils;
+import se.ifmo.ru.service.model.Flat;
+import se.ifmo.ru.storage.model.Page;
 import se.ifmo.ru.storage.repository.api.FlatRepository;
 import se.ifmo.ru.storage.model.Filter;
 import se.ifmo.ru.storage.model.FlatEntity;
@@ -10,6 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -53,7 +56,7 @@ public class FlatRepositoryImpl implements FlatRepository {
     }
 
     @Override
-    public List<FlatEntity> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filters, Integer page, Integer size) {
+    public Page<FlatEntity> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filters, Integer page, Integer size) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<FlatEntity> criteriaQuery = criteriaBuilder.createQuery(FlatEntity.class);
         Root<FlatEntity> root = criteriaQuery.from(FlatEntity.class);
@@ -128,14 +131,23 @@ public class FlatRepositoryImpl implements FlatRepository {
 
         TypedQuery<FlatEntity> typedQuery = entityManager.createQuery(select);
 
+        Page<FlatEntity> ret = new Page<>();
 
         if (page != null && size != null) {
             typedQuery.setFirstResult(page * size);
             typedQuery.setMaxResults(page * size + size);
+
+            Query queryTotal = entityManager.createQuery("Select count(f.id) from FlatEntity f");
+            long countResult = (long) queryTotal.getSingleResult();
+
+            ret.setPage(page);
+            ret.setPageSize(size);
+            ret.setTotalCount((int) Math.ceil((countResult * 1.0) / size));
         }
 
+        ret.setObjects(typedQuery.getResultList());
 
-        return typedQuery.getResultList();
+        return ret;
     }
 
     @Override
