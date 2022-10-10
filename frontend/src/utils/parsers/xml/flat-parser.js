@@ -5,28 +5,8 @@ export function parseFlatsPageResponseFromXml(xmlString) {
     let flats = Array.from(xmlDoc.getElementsByTagName("Flat"));
 
     let parsedFlats = flats.map((flatXml) => {
-        const coordinatesXml = flatXml.getElementsByTagName("coordinates")[0]
-        return {
-            id: flatXml.getElementsByTagName("id")[0].childNodes[0].nodeValue,
-            area: flatXml.getElementsByTagName("area")[0].childNodes[0].nodeValue,
-            coordinates: {
-                x: coordinatesXml.getElementsByTagName("x")[0].childNodes[0].nodeValue,
-                y: coordinatesXml.getElementsByTagName("y")[0].childNodes[0].nodeValue
-            },
-            creationDate: flatXml.getElementsByTagName("creationDate")[0].childNodes[0].nodeValue,
-            height: flatXml.getElementsByTagName("height")[0].childNodes[0].nodeValue,
-            house: {
-                name: "test",
-                numberOfFloors: 1,
-                numberOfLifts: 2,
-                year: 2022
-            },
-            name: flatXml.getElementsByTagName("name")[0].childNodes[0].nodeValue,
-            new: flatXml.getElementsByTagName("new")[0].childNodes[0].nodeValue,
-            numberOfRooms: flatXml.getElementsByTagName("numberOfRooms")[0].childNodes[0].nodeValue,
-            price: flatXml.getElementsByTagName("price")[0].childNodes[0].nodeValue,
-            transport: flatXml.getElementsByTagName("transport")[0].childNodes[0].nodeValue,
-        }
+        const serializer = new XMLSerializer();
+        return parseFlatFromXML(serializer.serializeToString(flatXml));
     });
 
     return {
@@ -38,53 +18,76 @@ export function parseFlatsPageResponseFromXml(xmlString) {
     }
 }
 
-function parseFlatFromXML(xmlString) {
+export function parseFlatFromXML(xmlString) {
     let parser = new DOMParser();
-    let xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    let flatXml = parser.parseFromString(xmlString, "text/xml");
+    const coordinatesXml = flatXml.getElementsByTagName("coordinates")[0]
+    const houseXml = flatXml.getElementsByTagName("house")[0]
+
+    let ret = {
+        id: flatXml.getElementsByTagName("id")[0]?.childNodes[0]?.nodeValue,
+        area: flatXml.getElementsByTagName("area")[0]?.childNodes[0]?.nodeValue,
+        creationDate: flatXml.getElementsByTagName("creationDate")[0]?.childNodes[0]?.nodeValue,
+        height: flatXml.getElementsByTagName("height")[0]?.childNodes[0]?.nodeValue,
+        name: flatXml.getElementsByTagName("name")[0]?.childNodes[0]?.nodeValue,
+        new: flatXml.getElementsByTagName("new")[0]?.childNodes[0]?.nodeValue,
+        numberOfRooms: flatXml.getElementsByTagName("numberOfRooms")[0]?.childNodes[0]?.nodeValue,
+        price: flatXml.getElementsByTagName("price")[0]?.childNodes[0]?.nodeValue,
+        transport: flatXml.getElementsByTagName("transport")[0]?.childNodes[0]?.nodeValue,
+    }
+
+    if (coordinatesXml) {
+        ret = {
+            ...ret,
+            coordinates: {
+                x: coordinatesXml.getElementsByTagName("x")[0]?.childNodes[0]?.nodeValue,
+                y: coordinatesXml.getElementsByTagName("y")[0]?.childNodes[0]?.nodeValue
+            },
+        }
+    }
+
+    if (houseXml) {
+        ret = {
+            ...ret,
+            house: {
+                name: houseXml.getElementsByTagName("name")[0]?.childNodes[0]?.nodeValue,
+                numberOfFloors: houseXml.getElementsByTagName("numberOfFloors")[0]?.childNodes[0]?.nodeValue,
+                numberOfLifts: houseXml.getElementsByTagName("numberOfLifts")[0]?.childNodes[0]?.nodeValue,
+                year: houseXml.getElementsByTagName("year")[0]?.childNodes[0]?.nodeValue
+            },
+        }
+    }
+
+    return ret;
+}
+
+function parseObjectToXML(object, name) {
+    const doc = document.implementation.createDocument("", "", null);
+    const namedElement = doc.createElement(name);
+
+    Object.keys(object).forEach((key) => {
+        if (key) {
+            if (typeof object[key] === 'object') {
+                if(object[key]) {
+                    namedElement.appendChild(parseObjectToXML(object[key], key));
+                }
+            } else {
+                const field = doc.createElement(key);
+                field.innerHTML = object[key]
+                namedElement.appendChild(field);
+            }
+        }
+    })
+
+    return namedElement;
 }
 
 export function parseFlatToXML(flat) {
-    console.log(flat)
     const doc = document.implementation.createDocument("", "", null);
-    const flatElement = doc.createElement("Flat");
 
-    const coordinates = doc.createElement("coordinates");
-    const house = doc.createElement("house");
+    doc.appendChild(parseObjectToXML(flat, "Flat"));
 
-    if (flat) {
-        Object.keys(flat).forEach((key) => {
-                if (key) {
-                    if (!key.includes(".")) {
-                        if (flat[key]) {
-                            const field = doc.createElement(key);
-                            field.innerHTML = flat[key]
-                            flatElement.appendChild(field);
-                        }
-                    } else {
-                        if (key.split(".")[0] === "coordinates") {
-                            if (flat[key]) {
-                                const field = doc.createElement(key.split(".")[1]);
-                                field.innerHTML = flat[key]
-                                coordinates.appendChild(field);
-                            }
-                        }
-                        if (key.split(".")[0] === "house") {
-                            if (flat[key]) {
-                                const field = doc.createElement(key.split(".")[1]);
-                                field.innerHTML = flat[key]
-                                house.appendChild(field);
-                            }
-                        }
-                    }
-                }
-            }
-        )
-    }
-
-    flatElement.appendChild(coordinates);
-    flatElement.appendChild(house);
-
-    doc.appendChild(flatElement);
+    console.log(doc)
 
     const serializer = new XMLSerializer();
     return serializer.serializeToString(doc);

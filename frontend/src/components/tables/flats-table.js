@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Table} from "antd";
+import {Button, Space, Table} from "antd";
 import {parseFlatsPageResponseFromXml} from "../../utils/parsers/xml/flat-parser";
 import axios from "axios";
 import {useSnackbar} from "notistack";
@@ -10,7 +10,8 @@ import {
     parseSorterToQueryParam
 } from "../../utils/parsers/table/sort-and-filter-parser";
 import {getColumnSearchProps} from "./column-search";
-import {FLATS_GET_API} from "../../utils/api-constancts"
+import {FLATS_API} from "../../utils/api-constancts"
+import {ReloadOutlined} from "@ant-design/icons";
 
 export default function FlatsTable({pageSize}) {
     const {enqueueSnackbar, closeSnackbar} = useSnackbar();
@@ -46,7 +47,7 @@ export default function FlatsTable({pageSize}) {
         setLoading(true)
 
         axios
-            .get(FLATS_GET_API, {params: queryParams})
+            .get(FLATS_API, {params: queryParams})
             .then((response) => {
                 const parsedResponse = parseFlatsPageResponseFromXml(response.data)
                 setData(parsedResponse.items.map((element) => {
@@ -117,6 +118,11 @@ export default function FlatsTable({pageSize}) {
             }
         }
     }
+
+    const handleRefresh = () => {
+        getData(currentPage, sortQueryParams, filtersMapToLHSBrackets(filterModel))
+    }
+
 
     return (
         <>
@@ -265,6 +271,15 @@ export default function FlatsTable({pageSize}) {
                     showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
                 }}
             />
+            <Space style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <Button icon={<ReloadOutlined/>} onClick={handleRefresh} style={{}}>
+                    Refresh
+                </Button>
+            </Space>
         </>
     );
 }

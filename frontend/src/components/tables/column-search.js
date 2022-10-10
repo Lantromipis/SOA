@@ -45,12 +45,6 @@ export const getColumnSearchProps = (dataIndex, searchFunction) => ({
                                 setSelectedKeys(selectedKeys)
                             }
                         }
-/*                        onPressEnter={
-                            () => {
-                                confirm()
-                                searchFunction(dataIndex, selectedKeys[0], selectedKeys[1])
-                            }
-                        }*/
                         style={{
                             marginBottom: 8,
                             display: 'block',

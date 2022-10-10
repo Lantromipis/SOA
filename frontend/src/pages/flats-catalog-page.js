@@ -1,30 +1,20 @@
 import FlatsTable from "../components/tables/flats-table";
-import {Button, Layout, Modal} from "antd";
+import {Divider, Layout, Space} from "antd";
 import CustomFooter from "../components/general/custom-footer";
 import CustomHeader from "../components/general/custom-header";
-import {useState} from "react";
-import FlatCreateForm from "../components/forms/flat-create-form";
+import {DeleteFlatForm} from "../components/forms/delete-flat-form";
+import {ModifyFlatForm} from "../components/forms/modify-flat-form";
+import {AddFlatForm} from "../components/forms/add-flat-form";
+import {HeightSumModal} from "../components/fast-response/height-sum-modal";
+import {CountByNewModal} from "../components/fast-response/count-by-new-modal";
+import {GetWithMaxIdModal} from "../components/fast-response/get-with-max-id-modal";
 
 const {Content} = Layout;
 
 export default function FlatsCatalogPage() {
-    const [isCreateFlatModalOpen, setIsCreateFlatModalOpen] = useState(false);
-
-    const showCreateFlatModal = () => {
-        setIsCreateFlatModalOpen(true);
-    };
-
-    const handleCreateFlatOk = () => {
-        setIsCreateFlatModalOpen(false);
-    };
-
-    const handleCreateFlatCancel = () => {
-        setIsCreateFlatModalOpen(false);
-    };
-
     return (
         <>
-            <Layout>
+            <Layout style={{minHeight: "100vh"}}>
                 <CustomHeader
                     selectedMenuItem={'catalog'}
                 />
@@ -32,14 +22,28 @@ export default function FlatsCatalogPage() {
                     <FlatsTable
                         pageSize={5}
                     />
-                    <Button type="primary" onClick={showCreateFlatModal}>
-                        Add new flat
-                    </Button>
-                    <FlatCreateForm
-                        formVisible={isCreateFlatModalOpen}
-                        onCancel={handleCreateFlatCancel}
-                        onFinish={handleCreateFlatOk}
-                    />
+                    <Divider/>
+                    <Space style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                    }}
+                           size={0}
+                    >
+                        <AddFlatForm/>
+                        <Divider style={{minWidth:600}}/>
+                        <ModifyFlatForm/>
+                        <Divider style={{minWidth:600}}/>
+                        <DeleteFlatForm/>
+                        <Divider style={{minWidth:600}}/>
+                        <HeightSumModal/>
+                        <Divider style={{minWidth:600}}/>
+                        <CountByNewModal/>
+                        <Divider style={{minWidth:600}}/>
+                        <GetWithMaxIdModal/>
+                    </Space>
+
                 </Content>
                 <CustomFooter/>
             </Layout>

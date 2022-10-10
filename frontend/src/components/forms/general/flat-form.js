@@ -1,40 +1,20 @@
-import {Checkbox, Form, Input, InputNumber, Modal, Radio, Select} from "antd";
+import {Form, Input, InputNumber, Modal, Radio, Select} from "antd";
 import {useForm} from "antd/es/form/Form";
-import {parseFlatToXML} from "../../utils/parsers/xml/flat-parser";
-import axios from "axios";
-import {FLATS_ADD_API} from "../../utils/api-constancts";
-import {useSnackbar} from "notistack";
-import {parseError} from "../../utils/parsers/xml/error-parser";
+import {useEffect} from "react";
 
-export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
+export default function FlatForm({formVisible, onCancel, onFinish, title, initialValues}) {
     const [form] = useForm();
-    const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
-    const onFormSubmit = (e) => {
-        const body = parseFlatToXML(e);
-
-        axios.post(FLATS_ADD_API, body, {
-                headers: {
-                    'content-type': 'application/xml'
-                }
-            }
-        )
-            .then((response) => {
-                onFinish()
-            })
-            .catch((err) => {
-                let error = parseError(err.response.data)
-                enqueueSnackbar(error.message, {
-                    autoHideDuration: 5000,
-                    variant: "error"
-                })
-            });
-    }
+    useEffect(() => {
+        if (initialValues) {
+            form.setFieldsValue(initialValues)
+        }
+    }, [initialValues])
 
     return (
         <>
             <Modal
-                title="Add new flat"
+                title={title}
                 open={formVisible}
                 onOk={form.submit}
                 onCancel={onCancel}
@@ -42,7 +22,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
             >
                 <Form
                     form={form}
-                    onFinish={onFormSubmit}
+                    onFinish={onFinish}
                     labelCol={{span: 4}}
                     wrapperCol={{span: 8}}
                     layout="horizontal"
@@ -88,10 +68,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                             {required: true, message: 'Please input number of rooms!'},
                             () => ({
                                 validator(_, value) {
-                                    if (!value) {
-                                        return Promise.resolve();
-                                    }
-                                    if (Number.isInteger(value) && value >= 0) {
+                                    if (Number.isInteger(Number(value)) && value >= 0) {
                                         return Promise.resolve();
                                     }
                                     return Promise.reject(new Error('Number of rooms must be integer greater than 0!'));
@@ -136,7 +113,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                                     if (!value) {
                                         return Promise.resolve();
                                     }
-                                    if (Number.isInteger(value) && value >= 0) {
+                                    if (Number.isInteger(Number(value)) && value >= 0) {
                                         return Promise.resolve();
                                     }
                                     return Promise.reject(new Error('Height must be integer greater than 0!'));
@@ -159,14 +136,11 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                         <Input.Group>
                             <Form.Item
                                 label="X"
-                                name="coordinates.x"
+                                name={["coordinates", "x"]}
                                 rules={[
                                     {required: true, message: 'Please input X!'},
                                     () => ({
                                         validator(_, value) {
-                                            if (!value) {
-                                                return Promise.resolve();
-                                            }
                                             if (value >= -292) {
                                                 return Promise.resolve();
                                             }
@@ -179,7 +153,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                             </Form.Item>
                             <Form.Item
                                 label="Y"
-                                name="coordinates.y"
+                                name={["coordinates", "y"]}
                                 rules={[
                                     {required: true, message: 'Please input y!'},
                                     () => ({
@@ -187,7 +161,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                                             if (!value) {
                                                 return Promise.resolve();
                                             }
-                                            if (Number.isInteger(value) && value >= -747) {
+                                            if (Number.isInteger(Number(value)) && value >= -747) {
                                                 return Promise.resolve();
                                             }
                                             return Promise.reject(new Error('Y must be integer greater than -747!'));
@@ -203,7 +177,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                         <Input.Group>
                             <Form.Item
                                 label="Name"
-                                name="house.name"
+                                name={["house", "name"]}
                                 rules={[
                                     {required: true, message: 'Please input name!'},
                                 ]}
@@ -212,7 +186,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                             </Form.Item>
                             <Form.Item
                                 label="Year"
-                                name="house.year"
+                                name={["house", "year"]}
                                 rules={[
                                     {required: false, message: 'Please input year!'},
                                     () => ({
@@ -220,7 +194,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                                             if (!value) {
                                                 return Promise.resolve();
                                             }
-                                            if (Number.isInteger(value) && value >= 0) {
+                                            if (Number.isInteger(Number(value)) && value >= 0) {
                                                 return Promise.resolve();
                                             }
                                             return Promise.reject(new Error('Year must be integer greater than 0!'));
@@ -232,7 +206,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                             </Form.Item>
                             <Form.Item
                                 label="Number of floors"
-                                name="house.numberOfFloors"
+                                name={["house", "numberOfFloors"]}
                                 rules={[
                                     {required: true, message: 'Please input number of floors!'},
                                     () => ({
@@ -240,7 +214,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                                             if (!value) {
                                                 return Promise.resolve();
                                             }
-                                            if (Number.isInteger(value) && value >= 0) {
+                                            if (Number.isInteger(Number(value)) && value >= 0) {
                                                 return Promise.resolve();
                                             }
                                             return Promise.reject(new Error('Number of floors must be integer greater than 0!'));
@@ -252,7 +226,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                             </Form.Item>
                             <Form.Item
                                 label="Number of lifts"
-                                name="house.numberOfLifts"
+                                name={["house", "numberOfLifts"]}
                                 rules={[
                                     {required: false, message: 'Please input number of lifts!'},
                                     () => ({
@@ -260,7 +234,7 @@ export default function FlatCreateForm({formVisible, onCancel, onFinish}) {
                                             if (!value) {
                                                 return Promise.resolve();
                                             }
-                                            if (Number.isInteger(value) && value >= 0) {
+                                            if (Number.isInteger(Number(value)) && value >= 0) {
                                                 return Promise.resolve();
                                             }
                                             return Promise.reject(new Error('Number of lifts must be integer greater than 0!'));
