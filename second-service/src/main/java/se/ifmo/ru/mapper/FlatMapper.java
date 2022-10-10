@@ -18,6 +18,10 @@ public interface FlatMapper {
 
     List<Flat> fromRestClient(List<RestClientFlat> restClientFlat);
 
+    default String from(Transport transport) {
+        return transport.toString();
+    }
+
     default Transport from(String transport) {
         return Transport.fromValue(transport);
     }
