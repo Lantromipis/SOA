@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
@@ -27,6 +28,11 @@ public class FlatGetResponseDto {
     private String transport;
     private FlatHouseGetResponseDto house;
     private Double price;
+
+    @XmlElement(name = "new")
+    public Boolean getNewField(){
+        return newField;
+    }
 
     @Data
     @XmlType

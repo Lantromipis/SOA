@@ -19,16 +19,18 @@ public class FlatsListGetResponseDto{
     private Integer page;
     private Integer pageSize;
     private Integer totalPages;
+    private Long totalCount;
 
     @XmlElement(name = "Flat")
     public List<FlatGetResponseDto> getFlatGetResponseDtos() {
         return flatGetResponseDtos;
     }
 
-    public FlatsListGetResponseDto(List<FlatGetResponseDto> flatGetResponseDtos, Integer page, Integer pageSize, Integer totalPages) {
+    public FlatsListGetResponseDto(List<FlatGetResponseDto> flatGetResponseDtos, Integer page, Integer pageSize, Integer totalPages, Long totalCount) {
         this.flatGetResponseDtos = flatGetResponseDtos;
         this.page = page;
         this.pageSize = pageSize;
         this.totalPages = totalPages;
+        this.totalCount = totalCount;
     }
 }

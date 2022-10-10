@@ -17,6 +17,7 @@ import se.ifmo.ru.web.model.FlatAddOrUpdateRequestDto;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -41,6 +42,9 @@ public class FlatServiceImpl implements FlatService {
             }
         }
 
+        Pattern nestedFieldNamePattern = Pattern.compile("(.*)\\.(.*)");
+        Pattern lhsPattern = Pattern.compile("(.*)\\[(.*)\\]=(.*)");
+
         List<Sort> sorts = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(sortsList)) {
@@ -55,7 +59,16 @@ public class FlatServiceImpl implements FlatService {
             for (String sort : sortsList) {
                 boolean desc = sort.startsWith("-");
                 String sortFieldName = desc ? sort.split("-")[1] : sort;
-                sortFieldName = sortFieldName.replace(".", "");
+
+                Matcher matcher = nestedFieldNamePattern.matcher(sortFieldName);
+                if (matcher.find()) {
+                    String nestedField = matcher.group(2).substring(0, 1).toUpperCase() + matcher.group(2).substring(1);
+                    sortFieldName = matcher.group(1) + nestedField;
+                }
+
+                if (Objects.equals(sortFieldName, "new")) {
+                    sortFieldName = "newField";
+                }
 
                 sorts.add(Sort
                         .builder()
@@ -68,17 +81,27 @@ public class FlatServiceImpl implements FlatService {
 
         List<Filter> filters = new ArrayList<>();
 
-        Pattern pattern = Pattern.compile("(.*)\\[(.*)\\](.*)");
-
         for (String filter : filtersList) {
-            Matcher matcher = pattern.matcher(filter);
+            Matcher matcher = lhsPattern.matcher(filter);
             String fieldName = null, fieldValue = null;
             FilteringOperation filteringOperation = null;
 
             if (matcher.find()) {
                 fieldName = matcher.group(1);
-                fieldName = fieldName.replace(".", "");
+
+                Matcher nestedFieldMatcher = nestedFieldNamePattern.matcher(fieldName);
+                if (nestedFieldMatcher.find()) {
+                    String nestedField = nestedFieldMatcher.group(2).substring(0, 1).toUpperCase() + nestedFieldMatcher.group(2).substring(1);
+                    fieldName = nestedFieldMatcher.group(1) + nestedField;
+                }
+
                 filteringOperation = FilteringOperation.fromValue(matcher.group(2));
+                if (Objects.equals(fieldName, "new")) {
+                    if (!Objects.equals(filteringOperation, FilteringOperation.EQ) && !Objects.equals(filteringOperation, FilteringOperation.NEQ)) {
+                        throw new IllegalArgumentException("Only [eq] and [neq] operations are allowed for \"new\" field");
+                    }
+                    fieldName = "newField";
+                }
                 fieldValue = matcher.group(3);
             }
 
@@ -93,19 +116,25 @@ public class FlatServiceImpl implements FlatService {
             }
 
             filters.add(Filter.builder()
-                            .fieldName(fieldName)
-                            .fieldValue(fieldValue)
-                            .filteringOperation(filteringOperation)
+                    .fieldName(fieldName)
+                    .fieldValue(fieldValue)
+                    .filteringOperation(filteringOperation)
                     .build()
             );
         }
+        Page<FlatEntity> entitiesPage;
 
-        Page<FlatEntity> entitiesPage = flatDao.getSortedAndFilteredPage(sorts, filters, page, pageSize);
+        try {
+            entitiesPage = flatDao.getSortedAndFilteredPage(sorts, filters, page, pageSize);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Error while getting page. Check query params format. " + e.getMessage(), e);
+        }
 
         Page<Flat> ret = new Page<>();
         ret.setObjects(flatMapper.fromEntityList(entitiesPage.getObjects()));
         ret.setPage(entitiesPage.getPage());
         ret.setPageSize(entitiesPage.getPageSize());
+        ret.setTotalPages(entitiesPage.getTotalPages());
         ret.setTotalCount(entitiesPage.getTotalCount());
 
         return ret;

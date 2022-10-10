@@ -27,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,9 +57,15 @@ public class CatalogController {
         try {
             if (StringUtils.isNotEmpty(pageParam)) {
                 page = Integer.parseInt(pageParam);
+                if (page <= 0) {
+                    throw new NumberFormatException();
+                }
             }
             if (StringUtils.isNotEmpty(pageSizeParam)) {
                 pageSize = Integer.parseInt(pageSizeParam);
+                if (pageSize <= 0) {
+                    throw new NumberFormatException();
+                }
             }
         } catch (NumberFormatException numberFormatException) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Invalid query param value");
@@ -84,6 +91,7 @@ public class CatalogController {
                                 flatMapper.toGetResponseDtoList(resultPage.getObjects()),
                                 resultPage.getPage(),
                                 resultPage.getPageSize(),
+                                resultPage.getTotalPages(),
                                 resultPage.getTotalCount()
                         )
                 )
@@ -190,7 +198,7 @@ public class CatalogController {
         if (requestDto.getArea() == null || requestDto.getArea() <= 0) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Area must be grater than 0");
         }
-        if (requestDto.getNumberOfRooms() <= 0) {
+        if (requestDto.getNumberOfRooms() == null || requestDto.getNumberOfRooms() <= 0) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Number of rooms must be greater than 0");
         }
         if (requestDto.getHeight() != null && requestDto.getHeight() <= 0) {
@@ -205,22 +213,25 @@ public class CatalogController {
         if (requestDto.getHouse() == null) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House can not be null");
         }
-        if (requestDto.getCoordinates().getX() <= -292) {
+        if (requestDto.getCoordinates() == null) {
+            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Coordinates can not be null");
+        }
+        if (requestDto.getCoordinates().getX() == null || requestDto.getCoordinates().getX() <= -292) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Coordinates X must be greater than -292");
         }
-        if (requestDto.getCoordinates().getY() <= -747 || requestDto.getCoordinates().getY() == null) {
+        if (requestDto.getCoordinates().getY() == null || requestDto.getCoordinates().getY() <= -747) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Coordinates Y must be greater than -747");
         }
         if (requestDto.getHouse().getName() == null) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House name can not be null");
         }
-        if (requestDto.getHouse().getYear() <= 0) {
+        if (requestDto.getHouse().getYear() != null && requestDto.getHouse().getYear() <= 0) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House year m,ust be greater than 0");
         }
-        if (requestDto.getHouse().getNumberOfFloors() <= 0) {
+        if (requestDto.getHouse().getNumberOfFloors() == null || requestDto.getHouse().getNumberOfFloors() <= 0) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "house number of floors must be greater than 0");
         }
-        if (requestDto.getHouse().getNumberOfLifts() != null && requestDto.getHouse().getNumberOfLifts() <= 0) {
+        if (requestDto.getHouse().getNumberOfLifts() != null && requestDto.getHouse().getNumberOfLifts() != null && requestDto.getHouse().getNumberOfLifts() <= 0) {
             return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House number of lifts must be greater than 0");
         }
 

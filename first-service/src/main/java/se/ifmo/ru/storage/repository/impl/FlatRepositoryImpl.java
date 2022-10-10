@@ -1,7 +1,6 @@
 package se.ifmo.ru.storage.repository.impl;
 
 import org.apache.commons.collections4.CollectionUtils;
-import se.ifmo.ru.service.model.Flat;
 import se.ifmo.ru.storage.model.Page;
 import se.ifmo.ru.storage.repository.api.FlatRepository;
 import se.ifmo.ru.storage.model.Filter;
@@ -23,6 +22,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @ApplicationScoped
 public class FlatRepositoryImpl implements FlatRepository {
@@ -58,26 +58,28 @@ public class FlatRepositoryImpl implements FlatRepository {
     @Override
     public Page<FlatEntity> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filters, Integer page, Integer size) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<FlatEntity> criteriaQuery = criteriaBuilder.createQuery(FlatEntity.class);
-        Root<FlatEntity> root = criteriaQuery.from(FlatEntity.class);
-        CriteriaQuery<FlatEntity> select = criteriaQuery.select(root);
+        CriteriaQuery<FlatEntity> flatsQuery = criteriaBuilder.createQuery(FlatEntity.class);
+        Root<FlatEntity> root = flatsQuery.from(FlatEntity.class);
+        CriteriaQuery<FlatEntity> select = flatsQuery.select(root);
+
+        List<Predicate> predicates = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(filters)) {
-            List<Predicate> predicates = new ArrayList<>();
+            predicates = new ArrayList<>();
 
             for (Filter filter : filters) {
                 switch (filter.getFilteringOperation()) {
                     case EQ:
                         predicates.add(criteriaBuilder.equal(
                                         root.get(filter.getFieldName()),
-                                        filter.getFieldValue()
+                                        getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
                                 )
                         );
                         break;
                     case NEQ:
                         predicates.add(criteriaBuilder.notEqual(
                                         root.get(filter.getFieldName()),
-                                        filter.getFieldValue()
+                                        getTypedFieldValue(filter.getFieldName(), filter.getFieldValue())
                                 )
                         );
                         break;
@@ -134,15 +136,26 @@ public class FlatRepositoryImpl implements FlatRepository {
         Page<FlatEntity> ret = new Page<>();
 
         if (page != null && size != null) {
-            typedQuery.setFirstResult(page * size);
-            typedQuery.setMaxResults(page * size + size);
+            typedQuery.setFirstResult((page - 1) * size);
+            typedQuery.setMaxResults(size);
 
-            Query queryTotal = entityManager.createQuery("Select count(f.id) from FlatEntity f");
-            long countResult = (long) queryTotal.getSingleResult();
+            long countResult = 0;
+
+            if (CollectionUtils.isEmpty(predicates)) {
+                Query queryTotal = entityManager.createQuery("Select count(f.id) from FlatEntity f");
+                countResult = (long) queryTotal.getSingleResult();
+            } else {
+                CriteriaBuilder qb = entityManager.getCriteriaBuilder();
+                CriteriaQuery<Long> cq = qb.createQuery(Long.class);
+                cq.select(qb.count(cq.from(FlatEntity.class)));
+                cq.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+                countResult = entityManager.createQuery(cq).getSingleResult();
+            }
 
             ret.setPage(page);
             ret.setPageSize(size);
-            ret.setTotalCount((int) Math.ceil((countResult * 1.0) / size));
+            ret.setTotalPages((int) Math.ceil((countResult * 1.0) / size));
+            ret.setTotalCount(countResult);
         }
 
         ret.setObjects(typedQuery.getResultList());
@@ -163,5 +176,13 @@ public class FlatRepositoryImpl implements FlatRepository {
     @Override
     public long countByNewField(Boolean newField) {
         return (long) entityManager.createQuery("select count(f) from FlatEntity f where f.newField=:newField").setParameter("newField", newField).getSingleResult();
+    }
+
+    private Object getTypedFieldValue(String fieldName, String fieldValue) {
+        if (Objects.equals(fieldName, "newField")) {
+            return Boolean.valueOf(fieldValue);
+        } else {
+            return fieldValue;
+        }
     }
 }
