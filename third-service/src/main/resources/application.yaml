@@ -1,0 +1,11 @@
+quarkus:
+  http:
+    port: 8082
+    cors: true
+    root-path: /third-service
+  datasource:
+    db-kind: postgresql
+    username: postgres
+    password: postgres
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/postgres
