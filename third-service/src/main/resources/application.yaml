@@ -1,8 +1,13 @@
 quarkus:
   http:
-    port: 8082
     cors: true
     root-path: /third-service
+    ssl-port: 49728
+    ssl:
+      certificate:
+        key-store-file: ./quarkuskeystore
+        key-store-password: changeit
+    insecure-requests: disabled
   datasource:
     db-kind: postgresql
     username: postgres

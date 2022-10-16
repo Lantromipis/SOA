@@ -1,5 +1,6 @@
 package se.ifmo.ru.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -13,6 +14,7 @@ import java.util.List;
 @Configuration
 @ComponentScan("se.ifmo.ru")
 @EnableWebMvc
+@Slf4j
 public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -21,6 +23,7 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        log.info("Configured cors");
         registry.addMapping("/**").allowedMethods("*");
     }
 }

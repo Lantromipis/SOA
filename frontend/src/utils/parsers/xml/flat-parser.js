@@ -87,8 +87,6 @@ export function parseFlatToXML(flat) {
 
     doc.appendChild(parseObjectToXML(flat, "Flat"));
 
-    console.log(doc)
-
     const serializer = new XMLSerializer();
     return serializer.serializeToString(doc);
 }

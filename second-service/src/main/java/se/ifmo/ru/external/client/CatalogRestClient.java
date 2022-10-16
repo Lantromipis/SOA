@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import se.ifmo.ru.external.SSLValidation;
 import se.ifmo.ru.external.model.RestClientFlat;
 import se.ifmo.ru.service.model.Flat;
 
@@ -23,6 +24,7 @@ public class CatalogRestClient implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        SSLValidation.turnOffSslChecking();
         restTemplate = new RestTemplate();
     }
 
