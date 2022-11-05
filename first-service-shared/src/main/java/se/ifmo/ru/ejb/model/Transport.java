@@ -1,0 +1,32 @@
+package se.ifmo.ru.ejb.model;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
+
+@RequiredArgsConstructor
+public enum Transport implements Serializable {
+    FEW("few"),
+    NONE("none"),
+    LITTLE("little"),
+    NORMAL("normal"),
+    ENOUGH("enough");
+
+    @Getter
+    private final String value;
+
+    @Override
+    public String toString() {
+        return value;
+    }
+
+    public static Transport fromValue(String value){
+        return Arrays.stream(Transport.values())
+                .filter(e-> Objects.equals(e.getValue(), value))
+                .findFirst()
+                .orElse(NONE);
+    }
+}

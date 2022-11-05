@@ -1,0 +1,27 @@
+version: "3.1"
+
+services:
+  postgres-first:
+    image: postgres
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - 45432:5432
+    volumes:
+      - pg-data-first:/var/lib/postgresql/data:Z
+
+  first-service-ejb:
+    build: first-service-ejb/
+
+  first-service-rest:
+    build: first-service-rest/
+    ports:
+      - 8080:8443
+
+volumes:
+  #because Docker on Windows has bug and Windows folder can not be used by postgres container
+  pg-data-first:
+    external: true

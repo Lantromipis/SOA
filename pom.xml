@@ -9,7 +9,11 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
+        <module>first-service-rest</module>
+        <module>first-service-ejb</module>
         <module>second-service</module>
+        <module>third-service</module>
+        <module>first-service-shared</module>
     </modules>
 
     <properties>
