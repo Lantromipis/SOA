@@ -28,3 +28,6 @@ eureka:
       defaultZone: http://second-service-eureka-server:8761/eureka
   instance:
     preferIpAddress: true
+ribbon:
+  eureka:
+    enabled: true
