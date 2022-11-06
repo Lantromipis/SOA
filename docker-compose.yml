@@ -1,6 +1,11 @@
 version: "3.1"
 
 services:
+  frontend:
+    build: frontend/
+    ports:
+      - 3000:80
+
   postgres-first:
     image: postgres
     environment:
