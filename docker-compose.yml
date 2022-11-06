@@ -30,6 +30,11 @@ services:
     ports:
       - 48080:8080
 
+  second-service-eureka-server:
+    build: second-service-eureka-server/
+    ports:
+      - 8761:8761
+
   second-service-rest:
     build: second-service-rest/
     ports:
