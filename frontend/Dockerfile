@@ -17,8 +17,9 @@ COPY deployment/nginx.conf /etc/nginx/nginx.conf
 COPY deployment/localhost.crt /etc/ssl/certs/localhost.crt
 COPY deployment/localhost.key /etc/ssl/private/localhost.key
 
-COPY public /usr/share/nginx/html/public
-
 RUN rm -rf /usr/share/nginx/html/*
+
+COPY public /usr/share/nginx/html/public
+COPY public/favicon.ico /usr/share/nginx/html/
 
 COPY --from=builder /react-ui/build /usr/share/nginx/html
