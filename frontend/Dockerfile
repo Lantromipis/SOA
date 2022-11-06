@@ -14,6 +14,8 @@ RUN npm run build
 FROM nginx:alpine
 
 COPY deployment/nginx.conf /etc/nginx/nginx.conf
+COPY deployment/localhost.crt /etc/ssl/certs/localhost.crt
+COPY deployment/localhost.key /etc/ssl/private/localhost.key
 
 COPY public /usr/share/nginx/html/public
 

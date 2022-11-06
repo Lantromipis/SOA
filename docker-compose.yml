@@ -5,6 +5,7 @@ services:
     build: frontend/
     ports:
       - 3000:80
+      - 443:443
 
   postgres-first:
     image: postgres

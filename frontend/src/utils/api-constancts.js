@@ -1,4 +1,4 @@
-const CATALOG_SERVICE = "https://localhost:49726/first-service"
+const CATALOG_SERVICE = "/first-service"
 const AGENCY_SERVICE = "https://localhost:49729/second-service"
 const SECRET_SERVICE = "https://localhost:49728/third-service"
 
