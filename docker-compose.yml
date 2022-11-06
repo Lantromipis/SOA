@@ -15,22 +15,37 @@ services:
 
   first-service-ejb:
     build: first-service-ejb/
+    depends_on:
+      - postgres-first
 
   first-service-rest:
     build: first-service-rest/
     ports:
       - 8080:8443
+    depends_on:
+      - first-service-ejb
+
+  second-service-config-server:
+    build: second-service-config-server/
+    ports:
+      - 48080:8080
 
   second-service-rest:
-    build: second-service/
+    build: second-service-rest/
     ports:
       - 8081:8443
+    depends_on:
+      - second-service-config-server
+    command: sh -c '/usr/bin/wait-for second-service-config-server:8080 -- java -jar /second-service-rest.war'
 
   frontend:
     build: frontend/
     ports:
       - 3000:80
       - 443:443
+    depends_on:
+      - first-service-rest
+      - second-service-rest
 volumes:
   #because Docker on Windows has bug and Windows folder can not be used by postgres container
   pg-data-first:

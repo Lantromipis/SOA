@@ -1,0 +1,10 @@
+server:
+  port: 8080
+spring:
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:///usr/share/spring-config
+  profiles:
+    active: native

@@ -1,7 +1,6 @@
 custom:
   rest-client:
     catalog:
-      service-url: https://first-service-rest:8443/first-service-rest
       trust-store: /ssl/firstservice.jks
       trust-store-password: password
 
@@ -16,3 +15,10 @@ server:
     key-password: password
     enabled: true
   port: 8443
+spring:
+  application:
+    name: second
+  profiles:
+    active: prod
+  config:
+    import: "configserver:http://second-service-config-server:8080"

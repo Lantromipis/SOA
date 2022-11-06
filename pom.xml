@@ -11,7 +11,8 @@
     <modules>
         <module>first-service-rest</module>
         <module>first-service-ejb</module>
-        <module>second-service</module>
+        <module>second-service-rest</module>
+        <module>second-service-config-server</module>
         <module>third-service</module>
         <module>first-service-shared</module>
     </modules>
