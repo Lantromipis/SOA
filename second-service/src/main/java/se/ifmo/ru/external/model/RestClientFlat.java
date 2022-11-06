@@ -1,20 +1,18 @@
 package se.ifmo.ru.external.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlType
-@XmlRootElement(name = "Flat")
+@JacksonXmlRootElement(localName = "Flat")
 public class RestClientFlat {
     private long id;
     private String name;
@@ -29,8 +27,7 @@ public class RestClientFlat {
     private Double price;
 
     @Data
-    @XmlType
-    @XmlRootElement(name = "Coordinates")
+    @JacksonXmlRootElement(localName = "Coordinates")
     public static class RestClientFlatCoordinates {
         private float x;
         private Integer y;
@@ -40,8 +37,7 @@ public class RestClientFlat {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @XmlType
-    @XmlRootElement(name = "House")
+    @JacksonXmlRootElement(localName = "House")
     public static class RestClientFlatHouse {
         private String name;
         private Integer year;

@@ -1,5 +1,5 @@
 const CATALOG_SERVICE = "/first-service"
-const AGENCY_SERVICE = "https://localhost:49729/second-service"
+const AGENCY_SERVICE = "/second-service"
 const SECRET_SERVICE = "https://localhost:49728/third-service"
 
 

@@ -64,6 +64,13 @@
                     <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
                 </authorization>
             </security-realm>
+            <security-realm name="ssl-realm">
+                <server-identities>
+                    <ssl>
+                        <keystore path="firstservice.jks" relative-to="jboss.server.config.dir" keystore-password="password" alias="firstservice" key-password="password"/>
+                    </ssl>
+                </server-identities>
+            </security-realm>
         </security-realms>
         <audit-log>
             <formatters>
@@ -478,7 +485,7 @@
             <buffer-cache name="default"/>
             <server name="default-server">
                 <!--<http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>-->
-                <https-listener name="default" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+                <https-listener name="default" socket-binding="https" security-realm="ssl-realm" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
                     <http-invoker security-realm="ApplicationRealm"/>

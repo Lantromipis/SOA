@@ -12,7 +12,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 @Configuration
-@ComponentScan("se.ifmo.ru")
 @EnableWebMvc
 @Slf4j
 public class WebConfiguration implements WebMvcConfigurer {

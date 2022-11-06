@@ -6,15 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlType
 @JacksonXmlRootElement(localName = "Flat")
 public class FlatGetResponseDto {
     private long id;
@@ -30,7 +27,6 @@ public class FlatGetResponseDto {
     private Double price;
 
     @Data
-    @XmlType
     @JacksonXmlRootElement(localName = "Coordinates")
     public static class FlatCoordinatesGetResponseDto {
         private float x;
@@ -41,7 +37,6 @@ public class FlatGetResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @XmlType
     @JacksonXmlRootElement(localName = "House")
     public static class FlatHouseGetResponseDto {
         private String name;

@@ -1,0 +1,18 @@
+custom:
+  rest-client:
+    catalog:
+      service-url: https://first-service-rest:8443/first-service-rest
+      trust-store: /ssl/firstservice.jks
+      trust-store-password: password
+
+server:
+  servlet:
+    context-path: /second-service-rest
+  ssl:
+    key-store: /ssl/secondservice.p12
+    key-store-password: password
+    key-store-type: pkcs12
+    key-alias: secondservice
+    key-password: password
+    enabled: true
+  port: 8443
