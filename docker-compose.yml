@@ -8,10 +8,20 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - 45432:5432
     volumes:
       - pg-data-first:/var/lib/postgresql/data:Z
+
+  postgres-third:
+    image: postgres
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pg-data-third:/var/lib/postgresql/data:Z
+    ports:
+      - 45432:5432
 
   first-service-consul:
     image: consul
@@ -58,6 +68,11 @@ services:
     deploy:
       replicas: 2
 
+  third-service:
+    build: third-service/
+    depends_on:
+      - postgres-third
+
   frontend:
     build: frontend/
     ports:
@@ -69,4 +84,6 @@ services:
 volumes:
   #because Docker on Windows has bug and Windows folder can not be used by postgres container
   pg-data-first:
+    external: true
+  pg-data-third:
     external: true

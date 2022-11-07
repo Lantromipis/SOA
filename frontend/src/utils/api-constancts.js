@@ -1,6 +1,6 @@
 const CATALOG_SERVICE = "/first-service"
 const AGENCY_SERVICE = "/second-service"
-const SECRET_SERVICE = "https://localhost:49728/third-service"
+const SECRET_SERVICE = "/third-service"
 
 
 export const FLATS_API = `${CATALOG_SERVICE}/catalog/flats`

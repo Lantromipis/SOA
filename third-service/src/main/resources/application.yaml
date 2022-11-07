@@ -2,10 +2,10 @@ quarkus:
   http:
     cors: true
     root-path: /third-service
-    ssl-port: 49728
+    ssl-port: 8443
     ssl:
       certificate:
-        key-store-file: ./quarkuskeystore
+        key-store-file: /ssl/quarkuskeystore
         key-store-password: changeit
     insecure-requests: disabled
   datasource:
@@ -13,4 +13,7 @@ quarkus:
     username: postgres
     password: postgres
     jdbc:
-      url: jdbc:postgresql://localhost:5432/postgres
+      url: jdbc:postgresql://postgres-third:5432/postgres
+  hibernate-orm:
+    database:
+      generation: update
