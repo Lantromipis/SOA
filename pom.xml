@@ -13,6 +13,7 @@
         <module>first-service-ejb</module>
         <module>second-service-config-server</module>
         <module>second-service-eureka-server</module>
+        <module>second-service-zuul</module>
         <module>second-service-rest</module>
         <module>third-service</module>
         <module>first-service-shared</module>

@@ -35,13 +35,20 @@ services:
     ports:
       - 8761:8761
 
+  second-service-zuul:
+    build: second-service-zuul/
+    ports:
+      - 48081:8080
+    depends_on:
+      - second-service-eureka-server
+
   second-service-rest:
     build: second-service-rest/
-    ports:
-      - 8081:8443
     depends_on:
       - second-service-config-server
     command: sh -c '/usr/bin/wait-for second-service-config-server:8080 -- java -jar /second-service-rest.war'
+    deploy:
+      replicas: 2
 
   frontend:
     build: frontend/

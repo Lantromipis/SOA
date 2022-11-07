@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: second-service-zuul-proxy
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://second-service-eureka-server:8761/eureka
+
+zuul:
+  routes:
+    agency-service:
+      path: /second-service-rest/**
+      serviceId: second
+      strip-prefix: false
+  host:
+    socket-timeout-millis: 30000
+ribbon:
+  ReadTimeout: 60000
+
