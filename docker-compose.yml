@@ -13,10 +13,17 @@ services:
     volumes:
       - pg-data-first:/var/lib/postgresql/data:Z
 
+  first-service-consul:
+    image: consul
+    command: agent -server -ui -node=server1 -bootstrap-expect=1 -client=0.0.0.0
+    ports:
+      - 8500:8500
+
   first-service-ejb:
     build: first-service-ejb/
     depends_on:
       - postgres-first
+      - first-service-consul
 
   first-service-rest:
     build: first-service-rest/
@@ -24,6 +31,7 @@ services:
       - 8080:8443
     depends_on:
       - first-service-ejb
+      - first-service-consul
 
   second-service-config-server:
     build: second-service-config-server/
