@@ -2,6 +2,7 @@ package se.ifmo.ru.service.impl;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jboss.ejb3.annotation.Pool;
 import se.ifmo.ru.ejb.api.FlatService;
 import se.ifmo.ru.ejb.model.Flat;
 import se.ifmo.ru.ejb.model.Page;
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
 
 @Stateless
 @Remote(FlatService.class)
+@Pool(value="mypool")
 public class FlatServiceImpl implements FlatService {
     @Inject
     FlatRepositoryImpl flatDao;

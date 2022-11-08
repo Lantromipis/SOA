@@ -37,16 +37,12 @@ services:
 
   first-service-rest:
     build: first-service-rest/
-    ports:
-      - 8080:8443
     depends_on:
       - first-service-ejb
       - first-service-consul
 
   second-service-config-server:
     build: second-service-config-server/
-    ports:
-      - 48080:8080
 
   second-service-eureka-server:
     build: second-service-eureka-server/
@@ -55,8 +51,6 @@ services:
 
   second-service-zuul:
     build: second-service-zuul/
-    ports:
-      - 48081:8443
     depends_on:
       - second-service-eureka-server
 
@@ -76,7 +70,6 @@ services:
   frontend:
     build: frontend/
     ports:
-      - 3000:80
       - 443:443
     depends_on:
       - first-service-rest
