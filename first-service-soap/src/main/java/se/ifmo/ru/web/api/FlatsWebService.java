@@ -1,10 +1,11 @@
 package se.ifmo.ru.web.api;
 
-import jakarta.jws.Oneway;
-import jakarta.jws.WebService;
 import se.ifmo.ru.web.exception.NotFoundException;
 import se.ifmo.ru.web.exception.VerificationException;
 import se.ifmo.ru.web.model.*;
+
+import javax.jws.Oneway;
+import javax.jws.WebService;
 
 @WebService
 public interface FlatsWebService {

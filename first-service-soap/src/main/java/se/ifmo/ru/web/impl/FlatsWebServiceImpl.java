@@ -1,9 +1,7 @@
 package se.ifmo.ru.web.impl;
 
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.jws.Oneway;
-import jakarta.jws.WebMethod;
-import jakarta.jws.WebService;
 import org.apache.commons.lang3.StringUtils;
 import se.ifmo.ru.mapper.FlatMapper;
 import se.ifmo.ru.service.api.FlatService;
@@ -17,8 +15,14 @@ import se.ifmo.ru.web.model.FlatGetResponseDto;
 import se.ifmo.ru.web.model.FlatsGetListRequestDto;
 import se.ifmo.ru.web.model.FlatsGetListResponseDto;
 
-@WebService(endpointInterface = "se.ifmo.ru.web.api.FlatsWebService")
-public class FLatsWebServiceImpl implements FlatsWebService {
+import javax.jws.Oneway;
+import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
+
+@WebService(endpointInterface = "se.ifmo.ru.web.api.FlatsWebService", serviceName = "flats")
+@SOAPBinding
+@Stateless
+public class FlatsWebServiceImpl implements FlatsWebService {
     @Inject
     FlatService flatService;
 
@@ -26,7 +30,6 @@ public class FLatsWebServiceImpl implements FlatsWebService {
     FlatMapper flatMapper;
 
     @Override
-    @WebMethod
     public FlatsGetListResponseDto getFlats(FlatsGetListRequestDto requestDto) {
         Page<Flat> resultPage = flatService.getFlats(
                 requestDto.getSort(),

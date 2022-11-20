@@ -1,6 +1,6 @@
 package se.ifmo.ru.web.exception;
 
-import jakarta.xml.ws.WebFault;
+import javax.xml.ws.WebFault;
 
 @WebFault(name = "NotFoundFault")
 public class NotFoundException extends RuntimeException{

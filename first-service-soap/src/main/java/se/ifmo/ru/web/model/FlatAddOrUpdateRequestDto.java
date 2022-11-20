@@ -1,12 +1,13 @@
 package se.ifmo.ru.web.model;
 
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlType;
 import lombok.Data;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 @Data
-@XmlType
+@XmlType(name = "Flat")
 @XmlRootElement(name = "Flat")
 public class FlatAddOrUpdateRequestDto {
     private String name;

@@ -30,6 +30,7 @@ services:
     ports:
       - 8090:8090
       - 9990:9990
+      - 8080:8080
 
   second-service-config-server:
     build: second-service-config-server/
