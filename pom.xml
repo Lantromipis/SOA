@@ -17,6 +17,7 @@
         <module>second-service-zuul</module>
         <module>second-service-rest</module>
         <module>third-service</module>
+        <module>first-service-soap</module>
     </modules>
 
     <properties>
