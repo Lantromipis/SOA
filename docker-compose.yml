@@ -23,6 +23,13 @@ services:
     ports:
       - 45432:5432
 
+  first-service-rest:
+    build: first-service-rest
+    depends_on:
+      - first-service-soap
+    ports:
+      - 47893:8443
+
   first-service-mule:
     build: mule
     depends_on:
@@ -35,7 +42,7 @@ services:
     depends_on:
       - postgres-first
     ports:
-      - 8080:8080
+      - 8085:8085
 
   second-service-config-server:
     build: second-service-config-server/

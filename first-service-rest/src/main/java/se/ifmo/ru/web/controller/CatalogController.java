@@ -4,13 +4,19 @@ import org.apache.commons.lang3.StringUtils;
 import se.ifmo.ru.ejb.model.Flat;
 import se.ifmo.ru.ejb.model.Page;
 import se.ifmo.ru.mapper.FlatMapper;
-import se.ifmo.ru.util.JNDIUtils;
+import se.ifmo.ru.soap.api.FlatGetResponseDto;
+import se.ifmo.ru.soap.api.FlatsGetListRequestDto;
+import se.ifmo.ru.soap.api.FlatsGetListResponseDto;
+import se.ifmo.ru.soap.impl.Flats;
+import se.ifmo.ru.soap.impl.NotFoundException;
+import se.ifmo.ru.soap.impl.VerificationException;
 import se.ifmo.ru.util.ResponseUtils;
 import se.ifmo.ru.web.model.FlatAddOrUpdateRequestDto;
 import se.ifmo.ru.web.model.FlatsListGetResponseDto;
 import se.ifmo.ru.web.model.NewCountResponseDto;
 import se.ifmo.ru.web.model.SumHeightResponseDto;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -27,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,13 +42,17 @@ import java.util.stream.Stream;
 public class CatalogController {
 
     @Inject
-    JNDIUtils jndiUtils;
-
-    @Inject
     ResponseUtils responseUtils;
 
     @Inject
     FlatMapper flatMapper;
+
+    private Flats flatWebService;
+
+    @PostConstruct
+    public void init() {
+        flatWebService = new Flats();
+    }
 
     @GET
     @Path("/flats")
@@ -53,24 +62,6 @@ public class CatalogController {
 
         String pageParam = request.getParameter("page");
         String pageSizeParam = request.getParameter("pageSize");
-        Integer page = null, pageSize = null;
-
-        try {
-            if (StringUtils.isNotEmpty(pageParam)) {
-                page = Integer.parseInt(pageParam);
-                if (page <= 0) {
-                    throw new NumberFormatException();
-                }
-            }
-            if (StringUtils.isNotEmpty(pageSizeParam)) {
-                pageSize = Integer.parseInt(pageSizeParam);
-                if (pageSize <= 0) {
-                    throw new NumberFormatException();
-                }
-            }
-        } catch (NumberFormatException numberFormatException) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Invalid query param value");
-        }
 
         List<String> sort = sortParameters == null
                 ? new ArrayList<>()
@@ -79,21 +70,22 @@ public class CatalogController {
                 ? new ArrayList<>()
                 : Stream.of(filterParameters).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
 
-        Page<Flat> resultPage = jndiUtils.getFlatServiceEJBInstance().getFlats(
-                sort,
-                filter,
-                page,
-                pageSize
-        );
+        FlatsGetListRequestDto requestDto = new FlatsGetListRequestDto();
+        requestDto.setPage(pageParam);
+        requestDto.setPage(pageSizeParam);
+        requestDto.getFilter().removeAll(filter);
+        requestDto.getSort().removeAll(sort);
+
+        FlatsGetListResponseDto response = flatWebService.getFlatsWebServiceImplPort().getFlats(requestDto);
 
         return Response
                 .ok()
                 .entity(new FlatsListGetResponseDto(
-                                flatMapper.toGetResponseDtoList(resultPage.getObjects()),
-                                resultPage.getPage(),
-                                resultPage.getPageSize(),
-                                resultPage.getTotalPages(),
-                                resultPage.getTotalCount()
+                                flatMapper.toGetResponseDtoList(response.getFlat()),
+                                response.getPage(),
+                                response.getPageSize(),
+                                response.getTotalPages(),
+                                response.getTotalCount()
                         )
                 )
                 .build();
@@ -102,62 +94,53 @@ public class CatalogController {
     @GET
     @Path("/flats/{id}")
     public Response getFlat(@PathParam("id") long id) {
-        Flat flat = jndiUtils.getFlatServiceEJBInstance().getFlat(id);
-
-        if (flat == null) {
+        try {
+            FlatGetResponseDto response = flatWebService.getFlatsWebServiceImplPort().getFlat(id);
+            return Response
+                    .ok()
+                    .entity(flatMapper.toDto(response))
+                    .build();
+        } catch (NotFoundException e) {
             return responseUtils.buildResponseWithMessage(Response.Status.NOT_FOUND, "Flat with id " + id + " not found");
         }
-        return Response
-                .ok()
-                .entity(flatMapper.toDto(flat))
-                .build();
     }
 
     @POST
     @Path("/flats")
     public Response addFlat(FlatAddOrUpdateRequestDto requestDto) {
-        Response validationResult = validateFlatAddOrUpdateRequestDto(requestDto);
+        try {
+            FlatGetResponseDto response = flatWebService.getFlatsWebServiceImplPort().addFlat(flatMapper.fromDto(requestDto));
 
-        if (validationResult != null) {
-            return validationResult;
+            return Response
+                    .ok()
+                    .entity(flatMapper.toDto(response))
+                    .build();
+
+        } catch (VerificationException e) {
+            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, e.getMessage());
         }
-
-        Flat flat = jndiUtils.getFlatServiceEJBInstance().addFlat(flatMapper.fromDto(requestDto));
-
-        return Response
-                .ok()
-                .entity(flatMapper.toDto(flat))
-                .build();
     }
 
     @PUT
     @Path("/flats/{id}")
     public Response updateFlat(@PathParam("id") long id, FlatAddOrUpdateRequestDto requestDto) {
-        Response validationResult = validateFlatAddOrUpdateRequestDto(requestDto);
+        try {
+            FlatGetResponseDto response = flatWebService.getFlatsWebServiceImplPort().updateFlat(id, flatMapper.fromDto(requestDto));
 
-        if (validationResult != null) {
-            return validationResult;
+            return Response
+                    .ok()
+                    .entity(flatMapper.toDto(response))
+                    .build();
+
+        } catch (VerificationException e) {
+            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, e.getMessage());
         }
-
-        Flat flat = jndiUtils.getFlatServiceEJBInstance().updateFlat(id, flatMapper.fromDto(requestDto));
-
-        if (flat == null) {
-            return responseUtils.buildResponseWithMessage(Response.Status.NOT_FOUND, "Flat with id " + id + " not found");
-        }
-        return Response
-                .ok()
-                .entity(flatMapper.toDto(flat))
-                .build();
     }
 
     @DELETE
     @Path("/flats/{id}")
     public Response deleteFlat(@PathParam("id") long id) {
-        boolean deleted = jndiUtils.getFlatServiceEJBInstance().deleteFlat(id);
-
-        if (!deleted) {
-            return responseUtils.buildResponseWithMessage(Response.Status.NOT_FOUND, "Flat with id " + id + " not found");
-        }
+        flatWebService.getFlatsWebServiceImplPort().deleteFlat(id);
 
         return Response.noContent().build();
     }
@@ -167,16 +150,21 @@ public class CatalogController {
     public Response sumHeight() {
         return Response
                 .ok()
-                .entity(SumHeightResponseDto.builder().sum(jndiUtils.getFlatServiceEJBInstance().sumHeight()).build())
+                .entity(
+                        SumHeightResponseDto
+                                .builder()
+                                .sum(flatWebService.getFlatsWebServiceImplPort().sumHeight())
+                                .build()
+                )
                 .build();
     }
 
     @GET
     @Path("/flats/max-id")
-    public Response getWithMaxId() {
+    public Response getWithMaxId() throws NotFoundException {
         return Response
                 .ok()
-                .entity(flatMapper.toDto(jndiUtils.getFlatServiceEJBInstance().getWithMaxId()))
+                .entity(flatWebService.getFlatsWebServiceImplPort().getWithMaxId())
                 .build();
     }
 
@@ -185,57 +173,12 @@ public class CatalogController {
     public Response countByNew(@QueryParam("value") Boolean value) {
         return Response
                 .ok()
-                .entity(NewCountResponseDto.builder().count(jndiUtils.getFlatServiceEJBInstance().countByNew(value)).build())
+                .entity(
+                        NewCountResponseDto
+                                .builder()
+                                .count(flatWebService.getFlatsWebServiceImplPort().countByNew(value))
+                                .build()
+                )
                 .build();
-    }
-
-    private Response validateFlatAddOrUpdateRequestDto(FlatAddOrUpdateRequestDto requestDto) {
-        if (StringUtils.isEmpty(requestDto.getName())) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Name can not be empty");
-        }
-        if (requestDto.getCoordinates() == null) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Coordinates can not be null");
-        }
-        if (requestDto.getArea() == null || requestDto.getArea() <= 0) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Area must be grater than 0");
-        }
-        if (requestDto.getNumberOfRooms() == null || requestDto.getNumberOfRooms() <= 0) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Number of rooms must be greater than 0");
-        }
-        if (requestDto.getHeight() != null && requestDto.getHeight() <= 0) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Height must be greater than 0");
-        }
-        if (requestDto.getNewField() == null) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "New can not be null");
-        }
-        if (StringUtils.isEmpty(requestDto.getTransport())) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Transport can not be empty");
-        }
-        if (requestDto.getHouse() == null) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House can not be null");
-        }
-        if (requestDto.getCoordinates() == null) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Coordinates can not be null");
-        }
-        if (requestDto.getCoordinates().getX() == null || requestDto.getCoordinates().getX() <= -292) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Coordinates X must be greater than -292");
-        }
-        if (requestDto.getCoordinates().getY() == null || requestDto.getCoordinates().getY() <= -747) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "Coordinates Y must be greater than -747");
-        }
-        if (requestDto.getHouse().getName() == null) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House name can not be null");
-        }
-        if (requestDto.getHouse().getYear() != null && requestDto.getHouse().getYear() <= 0) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House year m,ust be greater than 0");
-        }
-        if (requestDto.getHouse().getNumberOfFloors() == null || requestDto.getHouse().getNumberOfFloors() <= 0) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "house number of floors must be greater than 0");
-        }
-        if (requestDto.getHouse().getNumberOfLifts() != null && requestDto.getHouse().getNumberOfLifts() != null && requestDto.getHouse().getNumberOfLifts() <= 0) {
-            return responseUtils.buildResponseWithMessage(Response.Status.BAD_REQUEST, "House number of lifts must be greater than 0");
-        }
-
-        return null;
     }
 }
