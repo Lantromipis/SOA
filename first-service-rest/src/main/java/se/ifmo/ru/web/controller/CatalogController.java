@@ -72,7 +72,7 @@ public class CatalogController {
 
         FlatsGetListRequestDto requestDto = new FlatsGetListRequestDto();
         requestDto.setPage(pageParam);
-        requestDto.setPage(pageSizeParam);
+        requestDto.setSize(pageSizeParam);
         requestDto.getFilter().removeAll(filter);
         requestDto.getSort().removeAll(sort);
 
