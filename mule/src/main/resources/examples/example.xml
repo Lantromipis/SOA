@@ -1,0 +1,44 @@
+<Flats>
+	<Flat>
+		<id>1</id>
+		<date>2022-09-11T17:32:28Z</date>
+		<name>string</name>
+		<coordinates>
+			<x>-291</x>
+			<y>-746</y>
+		</coordinates>
+		<area>100</area>
+		<numberOfRooms>1</numberOfRooms>
+		<height>25</height>
+		<new>true</new>
+		<transport>few</transport>
+		<house>
+			<name>Example house</name>
+			<year>2022</year>
+			<numberOfFloors>20</numberOfFloors>
+			<numberOfLifts>2</numberOfLifts>
+		</house>
+		<price>10000</price>
+	</Flat>
+		<Flat>
+		<id>1</id>
+		<date>2022-09-11T17:32:28Z</date>
+		<name>string</name>
+		<coordinates>
+			<x>-291</x>
+			<y>-746</y>
+		</coordinates>
+		<area>100</area>
+		<numberOfRooms>1</numberOfRooms>
+		<height>25</height>
+		<new>true</new>
+		<transport>few</transport>
+		<house>
+			<name>Example house</name>
+			<year>2022</year>
+			<numberOfFloors>20</numberOfFloors>
+			<numberOfLifts>2</numberOfLifts>
+		</house>
+		<price>10000</price>
+	</Flat>
+</Flats>

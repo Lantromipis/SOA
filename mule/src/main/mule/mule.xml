@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e46f42af-bd16-4f6d-bb43-de77d86a0945" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="c749327e-ca66-4af4-98d0-4e465b57f6f0" >
+		<wsc:connection wsdlLocation="http://first-service-soap:8080/first-service-soap/flats?wsdl" service="flats" port="FlatsWebServiceImplPort" address="http://first-service-soap:8080/first-service-soap/flats">
+			<wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
+		</wsc:connection>
+	</wsc:config>
+	<flow name="muleFlow" doc:id="48041137-76cb-4035-ad54-c2aee236c70b" >
+		<http:listener doc:name="GetFlatById" doc:id="524c48e7-b872-4ff8-a040-32c3d61adfa1" config-ref="HTTP_Listener_config" path="/first-service/catalog/flats/{id}"/>
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set id" doc:id="5f299003-691a-4638-b814-a122ce7b8835" variableName="id" mimeType="application/json"/>
+		<ee:transform doc:name="Transform Message" doc:id="50ba0002-61fb-4c2e-9a58-dd5eea0ff7da" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://api.web.ru.ifmo.se/
+---
+{
+	ns0#getFlat: {
+		arg0: vars.id as Number
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="getFlat" doc:name="Consume" doc:id="3b459e7b-0925-4839-a49f-b12b5c197eae" config-ref="Web_Service_Consumer_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="499042b5-64c1-464f-ae54-7db0946c4c57" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://api.web.ru.ifmo.se/
+---
+{
+	Flat: {
+		area: payload.body.ns0#getFlatResponse.return.area default 0,
+		coordinates: {
+			x: payload.body.ns0#getFlatResponse.return.coordinates.x default 0,
+			y: payload.body.ns0#getFlatResponse.return.coordinates.y default 0
+		},
+		creationDate: payload.body.ns0#getFlatResponse.return.creationDate default |1815-12-10T08:15:00|,
+		height: payload.body.ns0#getFlatResponse.return.height default 0,
+		house: {
+			name: payload.body.ns0#getFlatResponse.return.house.name default "",
+			numberOfFloors: payload.body.ns0#getFlatResponse.return.house.numberOfFloors default 0,
+			numberOfLifts: payload.body.ns0#getFlatResponse.return.house.numberOfLifts default 0,
+			year: payload.body.ns0#getFlatResponse.return.house.year default 0
+		},
+		id: payload.body.ns0#getFlatResponse.return.id default 0,
+		name: payload.body.ns0#getFlatResponse.return.name as Number default 0,
+		new: payload.body.ns0#getFlatResponse.return.new as String default "",
+		numberOfRooms: payload.body.ns0#getFlatResponse.return.numberOfRooms default 0,
+		price: payload.body.ns0#getFlatResponse.return.price default 0,
+		transport: payload.body.ns0#getFlatResponse.return.transport default ""
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow doc:id="f8388d95-8235-4db8-8743-a64b9a253b15" name="GetFlats">
+		<http:listener doc:name="Listener" doc:id="b3ff76bd-341b-4a0a-b7c8-1299f5619739" config-ref="HTTP_Listener_config" path="/first-service/catalog/flats" outputMimeType="application/json"/>
+		<set-variable value="#[attributes.queryParams.pageSize default -1]" doc:name="Set page size" doc:id="dc350b88-3f2b-4e05-9ecf-6df9fb7a8b40" variableName="pageSize"/>
+		<set-variable value="#[attributes.queryParams.page default -1]" doc:name="Set page" doc:id="98a9a134-0e46-4353-bf66-ef00cbf1a3bf" variableName="page"/>
+		<set-variable value='#[attributes.queryParams.filter]' doc:name="Set filter" doc:id="46d17114-cddd-429d-b274-9306fc4af479" variableName="filter"/>
+		<set-variable value='#[attributes.queryParams.sort]' doc:name="Set sort" doc:id="962f5ed3-bc29-43c9-be5a-d111b78031cb" variableName="sort"/>
+		<ee:transform doc:name="Transform Message" doc:id="e205882d-5c4e-4800-86f1-acf16174f3bb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://api.web.ru.ifmo.se/
+---
+{
+	ns0#getFlats: {
+		arg0: {
+			filter: vars.filter,
+			page: vars.page as Number,
+			size: vars.pageSize as Number,
+			sort: vars.sort
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume operation="getFlats" doc:name="Consume" doc:id="5670c806-42a2-4508-bf8d-8693ef94584c" config-ref="Web_Service_Consumer_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="2fc92207-d1d6-4e19-ae23-ddc380d5c6ca" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://api.web.ru.ifmo.se/
+---
+{
+	Flats: {
+		(payload.body.ns0#getFlatsResponse.return.*Flat map ( flat , indexOfFlat ) -> {
+			Flat: {
+				area: flat.area,
+				Coordinates: flat.coordinates,
+				creationDate: flat.creationDate,
+				height: flat.height,
+				House: flat.house,
+				id: flat.id,
+				name: flat.name as String,
+				new: flat.new as String,
+				numberOfRooms: flat.numberOfRooms,
+				price: flat.price,
+				transport: flat.transport
+			}
+		})
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

@@ -18,6 +18,6 @@ import java.util.List;
 public class FlatsGetListRequestDto {
     private List<String> sort;
     private List<String> filter;
-    private Integer page;
-    private Integer size;
+    private String page;
+    private String size;
 }

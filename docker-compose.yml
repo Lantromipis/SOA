@@ -23,13 +23,18 @@ services:
     ports:
       - 45432:5432
 
+  first-service-mule:
+    build: mule
+    depends_on:
+      - first-service-soap
+    ports:
+      - 8083:8081
+
   first-service-soap:
     build: first-service-soap/
     depends_on:
       - postgres-first
     ports:
-      - 8090:8090
-      - 9990:9990
       - 8080:8080
 
   second-service-config-server:
@@ -50,8 +55,10 @@ services:
     depends_on:
       - second-service-config-server
     command: sh -c '/usr/bin/wait-for second-service-config-server:8080 -- java -jar /second-service-rest.war'
+    ports:
+      - 8263:8443
     deploy:
-      replicas: 2
+      replicas: 1
 
   third-service:
     build: third-service/

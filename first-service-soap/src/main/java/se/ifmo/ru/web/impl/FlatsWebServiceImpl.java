@@ -1,6 +1,5 @@
 package se.ifmo.ru.web.impl;
 
-import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import se.ifmo.ru.mapper.FlatMapper;
@@ -15,27 +14,52 @@ import se.ifmo.ru.web.model.FlatGetResponseDto;
 import se.ifmo.ru.web.model.FlatsGetListRequestDto;
 import se.ifmo.ru.web.model.FlatsGetListResponseDto;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.spi.CDI;
 import javax.jws.Oneway;
 import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
 
 @WebService(endpointInterface = "se.ifmo.ru.web.api.FlatsWebService", serviceName = "flats")
-@SOAPBinding
-@Stateless
+@ApplicationScoped
 public class FlatsWebServiceImpl implements FlatsWebService {
-    @Inject
-    FlatService flatService;
 
-    @Inject
-    FlatMapper flatMapper;
+    @PostConstruct
+    void init(){
+        flatService = CDI.current().select(FlatService.class).get();
+        flatMapper = CDI.current().select(FlatMapper.class).get();
+    }
+
+    private FlatService flatService;
+
+    private FlatMapper flatMapper;
 
     @Override
     public FlatsGetListResponseDto getFlats(FlatsGetListRequestDto requestDto) {
+        Integer page = null, pageSize = null;
+
+        try {
+            if (StringUtils.isNotEmpty(requestDto.getPage())) {
+                page = Integer.parseInt(requestDto.getPage());
+                if (page <= 0) {
+                    page = null;
+                }
+            }
+            if (StringUtils.isNotEmpty(requestDto.getSize())) {
+                pageSize = Integer.parseInt(requestDto.getSize());
+                if (pageSize <= 0) {
+                    pageSize = null;
+                }
+            }
+        } catch (NumberFormatException numberFormatException) {
+            throw new VerificationException("Invalid query param value");
+        }
+
         Page<Flat> resultPage = flatService.getFlats(
                 requestDto.getSort(),
                 requestDto.getFilter(),
-                requestDto.getPage(),
-                requestDto.getSize()
+                page,
+                pageSize
         );
 
         return new FlatsGetListResponseDto(

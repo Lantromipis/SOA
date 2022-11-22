@@ -1,4 +1,5 @@
 package se.ifmo.ru.service.impl;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.collections4.CollectionUtils;
@@ -8,6 +9,7 @@ import se.ifmo.ru.service.api.FlatService;
 import se.ifmo.ru.service.model.Flat;
 import se.ifmo.ru.service.model.Page;
 import se.ifmo.ru.service.model.Transport;
+import se.ifmo.ru.storage.repository.api.FlatRepository;
 import se.ifmo.ru.storage.repository.impl.FlatRepositoryImpl;
 import se.ifmo.ru.storage.model.Filter;
 import se.ifmo.ru.storage.model.FilteringOperation;
@@ -15,6 +17,8 @@ import se.ifmo.ru.storage.model.FlatEntity;
 import se.ifmo.ru.storage.model.Sort;
 import se.ifmo.ru.web.model.FlatAddOrUpdateRequestDto;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.inject.spi.CDI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,17 +27,22 @@ import java.util.regex.Pattern;
 
 @ApplicationScoped
 public class FlatServiceImpl implements FlatService {
-    @Inject
-    FlatRepositoryImpl flatDao;
 
-    @Inject
-    FlatMapper flatMapper;
+    @PostConstruct
+    public void init() {
+        flatDao = CDI.current().select(FlatRepository.class).get();
+        flatMapper = CDI.current().select(FlatMapper.class).get();
+    }
+
+    private FlatRepository flatDao;
+
+    private FlatMapper flatMapper;
 
     @Override
     public Page<Flat> getFlats(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize) {
         if (page != null || pageSize != null) {
             if (page == null) {
-                page = 0;
+                page = 1;
             }
             if (pageSize == null) {
                 pageSize = 20;
@@ -55,6 +64,9 @@ public class FlatServiceImpl implements FlatService {
             }
 
             for (String sort : sortsList) {
+                if(Objects.equals(sort, "")){
+                    continue;
+                }
                 boolean desc = sort.startsWith("-");
                 String sortFieldName = desc ? sort.split("-")[1] : sort;
 
@@ -79,46 +91,51 @@ public class FlatServiceImpl implements FlatService {
 
         List<Filter> filters = new ArrayList<>();
 
-        for (String filter : filtersList) {
-            Matcher matcher = lhsPattern.matcher(filter);
-            String fieldName = null, fieldValue = null;
-            FilteringOperation filteringOperation = null;
-
-            if (matcher.find()) {
-                fieldName = matcher.group(1);
-
-                Matcher nestedFieldMatcher = nestedFieldNamePattern.matcher(fieldName);
-                if (nestedFieldMatcher.find()) {
-                    String nestedField = nestedFieldMatcher.group(2).substring(0, 1).toUpperCase() + nestedFieldMatcher.group(2).substring(1);
-                    fieldName = nestedFieldMatcher.group(1) + nestedField;
+        if (CollectionUtils.isNotEmpty(filtersList)) {
+            for (String filter : filtersList) {
+                if (Objects.equals(filter, "")) {
+                    continue;
                 }
+                Matcher matcher = lhsPattern.matcher(filter);
+                String fieldName = null, fieldValue = null;
+                FilteringOperation filteringOperation = null;
 
-                filteringOperation = FilteringOperation.fromValue(matcher.group(2));
-                if (Objects.equals(fieldName, "new")) {
-                    if (!Objects.equals(filteringOperation, FilteringOperation.EQ) && !Objects.equals(filteringOperation, FilteringOperation.NEQ)) {
-                        throw new IllegalArgumentException("Only [eq] and [neq] operations are allowed for \"new\" field");
+                if (matcher.find()) {
+                    fieldName = matcher.group(1);
+
+                    Matcher nestedFieldMatcher = nestedFieldNamePattern.matcher(fieldName);
+                    if (nestedFieldMatcher.find()) {
+                        String nestedField = nestedFieldMatcher.group(2).substring(0, 1).toUpperCase() + nestedFieldMatcher.group(2).substring(1);
+                        fieldName = nestedFieldMatcher.group(1) + nestedField;
                     }
-                    fieldName = "newField";
+
+                    filteringOperation = FilteringOperation.fromValue(matcher.group(2));
+                    if (Objects.equals(fieldName, "new")) {
+                        if (!Objects.equals(filteringOperation, FilteringOperation.EQ) && !Objects.equals(filteringOperation, FilteringOperation.NEQ)) {
+                            throw new IllegalArgumentException("Only [eq] and [neq] operations are allowed for \"new\" field");
+                        }
+                        fieldName = "newField";
+                    }
+                    fieldValue = matcher.group(3);
                 }
-                fieldValue = matcher.group(3);
-            }
 
-            if (StringUtils.isEmpty(fieldName)) {
-                throw new IllegalArgumentException("Filter field name is empty");
-            }
-            if (StringUtils.isEmpty(fieldValue)) {
-                throw new IllegalArgumentException("Filter field value is empty");
-            }
-            if (Objects.equals(filteringOperation, FilteringOperation.UNDEFINED)) {
-                throw new IllegalArgumentException("No or unknown filtering operation. Possible values are: eq,neq,gt,lt,gte,lte.");
-            }
+                if (StringUtils.isEmpty(fieldName)) {
+                    throw new IllegalArgumentException("Filter field name is empty");
+                }
+                if (StringUtils.isEmpty(fieldValue)) {
+                    throw new IllegalArgumentException("Filter field value is empty");
+                }
+                if (Objects.equals(filteringOperation, FilteringOperation.UNDEFINED)) {
+                    throw new IllegalArgumentException("No or unknown filtering operation. Possible values are: eq,neq,gt,lt,gte,lte.");
+                }
 
-            filters.add(Filter.builder()
-                    .fieldName(fieldName)
-                    .fieldValue(fieldValue)
-                    .filteringOperation(filteringOperation)
-                    .build()
-            );
+                filters.add(Filter.builder()
+                        .fieldName(fieldName)
+                        .fieldValue(fieldValue)
+                        .filteringOperation(filteringOperation)
+                        .build()
+                );
+            }
         }
         Page<FlatEntity> entitiesPage;
 

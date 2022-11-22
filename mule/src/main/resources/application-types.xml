@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="FlatsListResponse" format="xml">
+      <types:example format="xml" element="Flats" location="examples/example-2.xml"/>
+    </types:type>
+    <types:type name="FlatGetResponse" format="xml">
+      <types:example format="xml" element="Flat" location="examples/getFlat-1.xml"/>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#2fc92207-d1d6-4e19-ae23-ddc380d5c6ca">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="FlatsListResponse"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#499042b5-64c1-464f-ae54-7db0946c4c57">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="FlatGetResponse"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
