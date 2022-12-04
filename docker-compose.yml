@@ -56,11 +56,13 @@ services:
     build: second-service-zuul/
     depends_on:
       - second-service-eureka-server
+      - second-service-rest
 
   second-service-rest:
     build: second-service-rest/
     depends_on:
       - second-service-config-server
+      - first-service-soap
     command: sh -c '/usr/bin/wait-for second-service-config-server:8080 -- java -jar /second-service-rest.war'
     ports:
       - 8263:8443
@@ -68,9 +70,11 @@ services:
       replicas: 1
 
   third-service:
-    build: third-service/
+    build: third-service-vertx/
     depends_on:
       - postgres-third
+    ports:
+      - 8889:8080
 
   frontend:
     build: frontend/
@@ -78,7 +82,8 @@ services:
       - 443:443
     depends_on:
       - first-service-soap
-      - second-service-rest
+      - second-service-zuul
+      - third-service
 volumes:
   #because Docker on Windows has bug and Windows folder can not be used by postgres container
   pg-data-first:

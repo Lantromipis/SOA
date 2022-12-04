@@ -27,7 +27,7 @@ public class HttpVerticle extends AbstractVerticle {
 
         Uni<HttpServer> httpServerUni = vertx.createHttpServer()
                 .requestHandler(router::handle)
-                .listen(8888)
+                .listen(8080)
                 .onItem().invoke(() -> log.info("HTTP server listening on port 8888"));
 
         return Uni.combine().all().unis(deployCountriesVerticelUni, deploySponsorVerticelUni, httpServerUni).discardItems();
@@ -38,7 +38,7 @@ public class HttpVerticle extends AbstractVerticle {
 
         router.get("/secret/countries").respond(this::getAllCountries);
         router.get("/secret/countries/:id/houses").respond(this::getHousesInCountry);
-        router.get("/secret/donate/:houseId/:sponsorId").handler(BodyHandler.create()).respond(this::sponsorHouse);
+        router.post("/secret/donate/:houseId/:sponsorId").handler(BodyHandler.create()).respond(this::sponsorHouse);
 
         return router;
     }
