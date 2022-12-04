@@ -17,6 +17,7 @@
         <module>second-service-rest</module>
         <module>third-service</module>
         <module>first-service-soap</module>
+        <module>third-service-vertx</module>
     </modules>
 
     <properties>
