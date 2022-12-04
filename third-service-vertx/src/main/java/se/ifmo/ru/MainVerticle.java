@@ -3,8 +3,8 @@ package se.ifmo.ru;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import lombok.extern.slf4j.Slf4j;
-import se.ifmo.ru.verticle.core.DatabaseVerticle;
-import se.ifmo.ru.verticle.core.HttpVerticle;
+import se.ifmo.ru.verticle.DatabaseVerticle;
+import se.ifmo.ru.verticle.HttpVerticle;
 
 
 @Slf4j

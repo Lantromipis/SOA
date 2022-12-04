@@ -13,4 +13,12 @@ public class XmlUtils {
             throw new RuntimeException(e);
         }
     }
+
+    public static <T> T stringToObject(String s, Class<T> clazz){
+        try {
+            return xmlMapper.readValue(s, clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

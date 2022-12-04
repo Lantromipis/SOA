@@ -1,4 +1,4 @@
-package se.ifmo.ru.verticle.service;
+package se.ifmo.ru.verticle;
 
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
@@ -8,13 +8,7 @@ import se.ifmo.ru.mapper.CountryMapper;
 import se.ifmo.ru.mapper.HouseMapper;
 import se.ifmo.ru.model.storage.CountryEntity;
 import se.ifmo.ru.model.storage.HouseEntity;
-import se.ifmo.ru.model.web.CountryListResponseDto;
-import se.ifmo.ru.model.web.CountryResponseDto;
 import se.ifmo.ru.utils.XmlUtils;
-import se.ifmo.ru.verticle.core.DatabaseVerticle;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class CountryVerticle extends AbstractVerticle {
@@ -25,7 +19,7 @@ public class CountryVerticle extends AbstractVerticle {
         });
 
         vertx.eventBus().consumer("service.country.getHousesInCountry", msg -> {
-            getHousesInCountryAll(msg);
+            getAllHousesInCountry(msg);
         });
 
         return Uni.createFrom().voidItem();
@@ -44,7 +38,7 @@ public class CountryVerticle extends AbstractVerticle {
                 .with(msg::reply);
     }
 
-    private void getHousesInCountryAll(Message<Object> msg) {
+    private void getAllHousesInCountry(Message<Object> msg) {
         DatabaseVerticle.getSessionFactory()
                 .withSession(session -> session
                         .createQuery("from HouseEntity where country.id = ?1", HouseEntity.class)
