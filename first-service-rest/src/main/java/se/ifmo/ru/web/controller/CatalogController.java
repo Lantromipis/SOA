@@ -73,8 +73,8 @@ public class CatalogController {
         FlatsGetListRequestDto requestDto = new FlatsGetListRequestDto();
         requestDto.setPage(pageParam);
         requestDto.setSize(pageSizeParam);
-        requestDto.getFilter().removeAll(filter);
-        requestDto.getSort().removeAll(sort);
+        requestDto.getFilter().addAll(filter);
+        requestDto.getSort().addAll(sort);
 
         FlatsGetListResponseDto response = flatWebService.getFlatsWebServiceImplPort().getFlats(requestDto);
 
@@ -162,9 +162,11 @@ public class CatalogController {
     @GET
     @Path("/flats/max-id")
     public Response getWithMaxId() throws NotFoundException {
+        FlatGetResponseDto response = flatWebService.getFlatsWebServiceImplPort().getWithMaxId();
+
         return Response
                 .ok()
-                .entity(flatWebService.getFlatsWebServiceImplPort().getWithMaxId())
+                .entity(flatMapper.toDto(response))
                 .build();
     }
 
